@@ -1696,7 +1696,7 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
         text,
         classList = [], // array of objects
         classNameList = [], // array of string
-        usedClassNames = [],// array of string
+        // usedClassNames = [],// array of string
         textLength,
         error = function (m, p) {
 
@@ -1749,18 +1749,18 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
                 }
             }
             return false;
-        },
-        duplicateClassName = function(className) {
-            if (usedClassNames.length) {
-                for (var el in usedClassNames) {
-                    if (usedClassNames[el] == className) {
-                        return true;
-                    }
-                }
-            }
-            usedClassNames.push(className);
-            return false;
         };
+        // duplicateClassName = function(className) {
+        //     if (usedClassNames.length) {
+        //         for (var el in usedClassNames) {
+        //             if (usedClassNames[el] == className) {
+        //                 return true;
+        //             }
+        //         }
+        //     }
+        //     usedClassNames.push(className);
+        //     return false;
+        // };
         // validate_semantic = require("./validator/semantic");
     
     return function(text_json, dataModel) {
@@ -1771,7 +1771,7 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
         textLength = text.length;
         classList = [];
         classNameList = [];
-        usedClassNames = [];
+        // usedClassNames = [];
 
         // convert text to real json object
         var object_json = JSON.parse(text_json);//console.log(object_json);
@@ -1866,9 +1866,9 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
             if (!validateClassName(classValue)) {
                 error('SemanticError: Class name "'+classValue+'" not matched. Please remove it and press (Ctrl+Space) for suggestions.', text.indexOf('class', at+1));
             }
-            if (duplicateClassName(classValue)) {
-                error('SemanticError: Duplicated class name "' +classValue+ '"', text.indexOf('class', at+1));
-            }
+            // if (duplicateClassName(classValue)) {
+            //     error('SemanticError: Duplicated class name "' +classValue+ '"', text.indexOf('class', at+1));
+            // }
 
             if (!permissionProperty) {
                 error('Invalid schema: Object MISSES PROPERTY "permission", please ADD it to this object with FORMAT  "permission": []', text.indexOf('{', at+1));
@@ -2147,65 +2147,65 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
     }
 });
 
-ace.define("ace/mode/validator/semantic", [], function(require, exports, module){
-// "use strict";
+// ace.define("ace/mode/validator/semantic", [], function(require, exports, module){
+// // "use strict";
 
-    var text,
-        error = function (m, p) {
+//     var text,
+//         error = function (m, p) {
 
-            throw {
-                name:    'InvalidSemantic',
-                message: m,
-                at:      p,
-                text:    text
-            };
-        },
-        findEndIndex = function(i, j, sample_class, txt) {
-            var c = 0, // iterate each char
-                o = -1,// marking object index
-                t = 0, // marking end of object
-                currentChar = '',
-                lastChar = '',
-                insideDoubleQuotes = false;
-            while (o < j) {
-                currentChar = text.charAt(c);
-                if (currentChar == '"' && lastChar != '\\') { insideDoubleQuotes = !insideDoubleQuotes; }
-                else if (currentChar == '{' && !insideDoubleQuotes) { ++t; }
-                else if (currentChar == '}' && !insideDoubleQuotes) {
-                    --t;
-                    if (!t) { ++o; }
-                }
-                if (o == i) {
-                    i = txt.lastIndexOf(sample_class, c);
-                }
-                ++c;
-                lastChar = currentChar;
-            }
-            j = txt.lastIndexOf(sample_class, c);
-            return {i: i, j: j};
-        }
+//             throw {
+//                 name:    'InvalidSemantic',
+//                 message: m,
+//                 at:      p,
+//                 text:    text
+//             };
+//         },
+//         findEndIndex = function(i, j, sample_class, txt) {
+//             var c = 0, // iterate each char
+//                 o = -1,// marking object index
+//                 t = 0, // marking end of object
+//                 currentChar = '',
+//                 lastChar = '',
+//                 insideDoubleQuotes = false;
+//             while (o < j) {
+//                 currentChar = text.charAt(c);
+//                 if (currentChar == '"' && lastChar != '\\') { insideDoubleQuotes = !insideDoubleQuotes; }
+//                 else if (currentChar == '{' && !insideDoubleQuotes) { ++t; }
+//                 else if (currentChar == '}' && !insideDoubleQuotes) {
+//                     --t;
+//                     if (!t) { ++o; }
+//                 }
+//                 if (o == i) {
+//                     i = txt.lastIndexOf(sample_class, c);
+//                 }
+//                 ++c;
+//                 lastChar = currentChar;
+//             }
+//             j = txt.lastIndexOf(sample_class, c);
+//             return {i: i, j: j};
+//         }
     
-    return function(text_json, doc) {
-        text = text_json;
+//     return function(text_json, doc) {
+//         text = text_json;
         
-        var sample_class,
-            json_object = JSON.parse(text),
-            arrLen = json_object.length;
+//         var sample_class,
+//             json_object = JSON.parse(text),
+//             arrLen = json_object.length;
 
-        for (var i = 0; i < arrLen-1; ++i) {
-            sample_class = json_object[i].class;
-            for (var j = i+1; j < arrLen; ++j) {
-                if (json_object[j].class == sample_class) {
-                    var indices = findEndIndex(i, j, sample_class, text_json);
-                    var index = doc.indexToPosition(indices.i-1);
-                        index = index.row + 1;
-                    error('Semantic error: Class name "' +sample_class+ '" was declared at line ' +index+ ', please change to a different name', indices.j);
-                }
-            }
-        }
+//         for (var i = 0; i < arrLen-1; ++i) {
+//             sample_class = json_object[i].class;
+//             for (var j = i+1; j < arrLen; ++j) {
+//                 if (json_object[j].class == sample_class) {
+//                     var indices = findEndIndex(i, j, sample_class, text_json);
+//                     var index = doc.indexToPosition(indices.i-1);
+//                         index = index.row + 1;
+//                     error('Semantic error: Class name "' +sample_class+ '" was declared at line ' +index+ ', please change to a different name', indices.j);
+//                 }
+//             }
+//         }
 
-    }
-});
+//     }
+// });
 /************************************************** */
 ace.define("ace/mode/json_worker",[], function(require, exports, module) {
 // "use strict";
@@ -2214,7 +2214,7 @@ var oop = require("../lib/oop");
 var Mirror = require("../worker/mirror").Mirror;
 var parse = require("./json/json_parse");
 var validate_schema = require("./validator/schema");
-var validate_semantic = require("./validator/semantic");
+// var validate_semantic = require("./validator/semantic");
 
 var JsonWorker = exports.JsonWorker = function(sender) {//console.log("new JsonWorker(sender)");
 // console.log(arguments.callee.caller.toString());
@@ -2253,7 +2253,7 @@ oop.inherits(JsonWorker, Mirror);
             if (value) {
                 parse(value);
                 validate_schema(value, dataModel, this.doc);
-                validate_semantic(value, this.doc);
+                // validate_semantic(value, this.doc);
             }
         } catch (e) {
             var pos = this.doc.indexToPosition(e.at-1);
