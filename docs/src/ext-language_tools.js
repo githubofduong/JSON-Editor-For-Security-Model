@@ -1925,13 +1925,14 @@ function getResources(className) {
         // class name found and 'attributes' is an array with at least an element
         if (tmpName == className && Array.isArray(tmpAttr) && tmpAttr.length) {
             for (subEl in tmpAttr) {     // loop through array 'attributes'
-                attObj = tmpAttr[subEl]; // access object element of the array
-                resources.push({
-                    name: attObj.name,
-                    value: attObj.name,
-                    score: 0,
-                    meta: "resources"
-                });
+                resources.push(tmpAttr[subEl].name);
+                // attObj = tmpAttr[subEl]; // access object element of the array
+                // resources.push({
+                //     name: attObj.name,
+                //     value: attObj.name,
+                //     score: 0,
+                //     meta: "resources"
+                // });
             }
         }
     }
@@ -2107,18 +2108,73 @@ function filterClassNames(classList, doc) {
     return classList;
 }
 
-function filterProperties(propertyList, doc, lower, upper) {
-    var el,
-        str = doc.slice(lower, upper),
-        patt;
+// function filterPropertiesOuter(propertyList, doc, lower, upper) {
+//     var el,
+//         str = (!lower || !upper) ? doc : doc.slice(lower, upper),
+//         patt;
 
-    for (el in propertyList) {
-        patt = new RegExp('"' +propertyList[el]+ '"\\s*:');
-        if (doc.search(patt) !== -1) {
-            propertyList.splice(el, el+1);
+//     for (el in propertyList) {
+//         patt = new RegExp('"' +propertyList[el]+ '"\\s*:');
+//         if (str.search(patt) !== -1) {
+//             propertyList.splice(el, el+1);
+//         }
+//     }
+//     return propertyList;
+// }
+
+function filterProperties(propertyList, doc, lower, upper) {
+    var str = (!lower || !upper) ? doc : doc.slice(lower, upper),
+        i = 0,
+        patt,
+        tmp,
+        hasDefault = hasRoles = hasAuth = false;
+
+    while (i < propertyList.length) {
+        tmp = propertyList[i];
+        patt = new RegExp('"' +tmp+ '"\\s*:');
+        if (str.search(patt) !== -1) {
+            switch(tmp) {
+                case 'default':
+                    hasDefault = true;
+                    break;
+                case 'roles':
+                    hasRoles = true;
+                    break;
+                case 'auth':
+                    hasAuth = true;
+                    break;
+                default:
+                    break;
+            }
+            propertyList.splice(i, 1);
+        } else {
+            ++i;
         }
     }
+    if (hasDefault) {
+        hasRoles = propertyList.indexOf('roles');
+        hasRoles >= 0 ? propertyList.splice(hasRoles, 1) : {};
+        hasAuth = propertyList.indexOf('auth');
+        hasAuth >= 0 ? propertyList.splice(hasAuth, 1) : {};
+    } else if (hasRoles || hasAuth) {
+        hasDefault = propertyList.indexOf('default');
+        hasDefault >= 0 ? propertyList.splice(hasDefault, 1) : {};
+        
+    }
     return propertyList;
+}
+
+function filterArrValues(property, values, doc, lower, upper) {
+    var str = doc.slice(lower, upper),
+        patt = new RegExp('"' +property+ '"\\s*:\\s*\\[.*\\]\\s*[,}]'),
+        res = str.match(patt)[0],
+        str = res.match(/\[.*\]/)[0],
+        arr = [];
+
+    values.filter(function(currentValue) {
+        str.indexOf(currentValue) === -1 ? arr.push(currentValue) : {};
+    });
+    return arr;
 }
 
 function getKeywordList(editor, pos) {
@@ -2127,7 +2183,7 @@ function getKeywordList(editor, pos) {
         cursorIndex = editor.getSession().getDocument().positionToIndex(pos),
         // get text document as a string
         doc = editor.getValue(),
-        // 
+        // fetch necessary info
         validatedResult = validateDoubleQuotes(cursorIndex, doc);
 
     if (validatedResult) {
@@ -2168,12 +2224,16 @@ function getKeywordList(editor, pos) {
                 switch (propertyName) {
                     case 'resources':
                         className = findTermInRange(left_0, c, classList, doc);
-                        return getResources(className);
+                        kwList = getResources(className);
+                        kwList = filterArrValues('resources', kwList, doc, left_1, c);
+                        return editor.session.$mode.getCompletions(kwList, 'resources');
                     case 'actions':
                         kwList = ['create', 'read', 'update', 'delete'];
+                        kwList = filterArrValues('actions', kwList, doc, left_1, c);
                         return editor.session.$mode.getCompletions(kwList, 'actions');
                     case 'roles':
                         kwList = ['admin', 'lecturer'];
+                        kwList = filterArrValues('roles', kwList, doc, left_1, c);
                         return editor.session.$mode.getCompletions(kwList, 'roles');
                     default:
                         return null;
@@ -2186,11 +2246,13 @@ function getKeywordList(editor, pos) {
 
                 switch(propertyName) {
                     case 'default':
-                        kwList = ['self = caller'];
-                        return editor.session.$mode.getCompletions(kwList, 'default');
+                        return null;
+                        // kwList = ['self = caller'];
+                        // return editor.session.$mode.getCompletions(kwList, 'default');
                     case 'auth':
-                        kwList = ['true', 'self.oclAsType(Student).courses->exists(c|c.lectures->includes(caller.oclAsType(Lecturer)))'];
-                        return editor.session.$mode.getCompletions(kwList, 'auth');
+                        return null;
+                        // kwList = ['true', 'self.oclAsType(Student).courses->exists(c|c.lectures->includes(caller.oclAsType(Lecturer)))'];
+                        // return editor.session.$mode.getCompletions(kwList, 'auth');
                     default:
                         return null;
                 }
