@@ -1976,8 +1976,8 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
             var permissionValue = currentArrEl.permission;
             // permission is not array
             if (!Array.isArray(permissionValue)) {
-                errMsg = 'Invalid schema: "permission" must be array.';
-                searchProperty(text, at, 'permission', errMsg);
+                // errMsg = 'Invalid schema: "permission" must be array.';
+                searchProperty(text, at, 'permission');
             }// permission is array
 
             // check elements of array "permission"
