@@ -3,85 +3,15 @@
 
 <head>
 <meta charset="UTF-8"> 
-<title>ACE in Action</title>
+<title>JSON Editor For Security Model</title>
 <link rel="stylesheet" href="./styles.css">
+<script src="./src/ace.js"></script>
+<script src="./src/ext-language_tools.js"></script>
 </head>
 
 <body>
-
-    <input type="file" id="fileElem" style="display:none" accept=".json" onchange="window.ace.handleFiles(this.files)">
-
-    <div id="editor" onclick="window.ace.importDataModel()" onkeypress="window.ace.importDataModel()"></div>
-
- <!-- <div id="editor" onclick="window.ace.importDataModel()" onkeypress="window.ace.importDataModel()">[
-    {
-        "class" : "Car",
-        "permission" : [
-            {
-                "resources" : ["ginven_name", "middle_name", "family_name", "email"],
-                "actions" : ["read"],
-                "default" : "self = caller"
-            },
-            {
-                "resources" : ["ginven_name", "middle_name", "family_name", "email"],
-                "actions" : ["read"],
-                "roles" : ["lecturer"],
-                "auth" : "self.oclAsType(Student).courses->exists(c|c.lectures->includes(caller.oclAsType(Lecturer)))"
-            },
-            {
-                "resources" : ["ginven_name", "middle_name", "family_name", "email"],
-                "actions" : ["read"],
-                "roles" : ["admin"],
-                "auth" : "true"
-            }
-        ]
-    },
-    {
-        "class" : "Person",
-        "permission" : [
-            {
-                "resources" : ["ginven_name", "middle_name", "family_name", "email"],
-                "actions" : ["read"],
-                "default" : "self = caller"
-            }
-        ]
-    }
-]</div> -->
-<!-- <div id="editor">
-[
-    {
-        "class" : "Reg_user",
-        "permission" : [
-            {
-                "resources" : ["given_name", "middle_name", "family_name", "email"],
-                "actions" : ["read"],
-                "default" : "self = caller"
-            },
-            {
-                "resources" : ["ginven_name", "middle_name", "family_name", "email"],
-                "actions" : ["read"],
-                "roles" : ["lecturer"],
-                "auth" : "self.oclAsType(Student).courses->exists(c|c.lectures->includes(caller.oclAsType(Lecturer)))"
-            },
-            {
-                "resources" : ["ginven_name", "middle_name", "family_name", "email"],
-                "actions" : ["read"],
-                "roles" : ["admin"],
-                "auth" : "true"
-            }
-        ]
-    }
-]
-</div> -->
-
-    
-<!-- <script src="./node_modules/jsonschema/lib/validator.js"></script> -->
-<script src="./src/ace.js"></script>
-<script src="./src/ext-language_tools.js"></script>
-<!-- <script src="./src-noconflict/ext-beautify.js"></script> -->
-
+<input type="file" id="fileElem" style="display:none" accept=".json" onchange="ace.handleFiles(this.files)">
+<div id="editor" onclick="ace.importDataModel()" onkeypress="ace.importDataModel()"></div>
 <script src="./src/editor.js"></script>
-<!-- <script src="./src-noconflict/worker-json.js"></script> -->
-
 </body>
 </html>
