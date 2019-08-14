@@ -2103,7 +2103,7 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
             fullListIndex = fullList.indexOf(currentValue);
             switch(fullListIndex) {
                 case -1:
-                    errMsg = 'Invalid schema: '+currentValue+' invalid.';
+                    errMsg = 'Invalid schema: "'+currentValue+'" invalid.';
                     searchProperty(p_at, propertyName);
                     break;
                 default:
