@@ -2082,7 +2082,7 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
             errMsg = 'Invalid schema: Array "roles" empty.';
             searchProperty(p_at, 'roles');
         } 
-        filterDuplicateArrEls('roles', ['admin', 'lecturer'], rolesEl);
+        // filterDuplicateArrEls('roles', ['admin', 'lecturer'], rolesEl);
     }
 
     // check value of "auth"

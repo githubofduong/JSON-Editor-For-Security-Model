@@ -2116,9 +2116,9 @@ function validateDoubleQuotes(cursorIndex, doc) {
         rightChar = findFirstRightChar(doc, cursorIndex);
 
         if (leftChar === ':') {
-            var range = reverseString(doc.substring(currentOuterBlockStart, leftCharIndex)),
+            var range = stringReverse(doc.substring(currentOuterBlockStart, leftCharIndex)),
                 // "class"\s*: ->
-                term  = new RegExp('\\s*"' +reverseString('class')+ '"');
+                term  = new RegExp('\\s*"' +stringReverse('class')+ '"');
 
             if (range.search(term)) {return false}
 
@@ -2137,9 +2137,9 @@ function validateDoubleQuotes(cursorIndex, doc) {
         }
     } else if (currentBlock === 2) {
         if (currentSubArrStart < currentInnerBlockStart && currentInnerBlockEnd < currentSubArrEnd) {
-            var range = reverseString(doc.substring(currentOuterBlockStart, currentSubArrStart)),
+            var range = stringReverse(doc.substring(currentOuterBlockStart, currentSubArrStart)),
                 // "permission"\s*:\s*[ -> [\s*:\s*" reverseString() "
-                term  = new RegExp('\\s*:\\s*"' +reverseString('permission')+ '"');
+                term  = new RegExp('\\s*:\\s*"' +stringReverse('permission')+ '"');
 
             if (range.search(term)) {return false}
             
@@ -2153,10 +2153,10 @@ function validateDoubleQuotes(cursorIndex, doc) {
                 }
 
                 var i = false, el, termArr = ['resources', 'actions', 'roles'];
-                range = reverseString(doc.substring(currentInnerBlockStart, currentRAR_Start));
+                range = stringReverse(doc.substring(currentInnerBlockStart, currentRAR_Start));
 
                 for (el in termArr) {
-                    term = new RegExp('\\s*:\\s*"' +reverseString(termArr[el])+ '"');
+                    term = new RegExp('\\s*:\\s*"' +stringReverse(termArr[el])+ '"');
 
                     if (range.search(term)) {continue}
 
@@ -2197,15 +2197,19 @@ function validateDoubleQuotes(cursorIndex, doc) {
     return false;
 }
 
-function reverseString(str) {
-    var i = str.length-1,
-        newStr = '';
+function stringReverse(string) {
+    return string.split("").reverse().join("");
+};
+
+// function reverseString(str) {
+//     var i = str.length-1,
+//         newStr = '';
     
-    while(i >= 0) {
-        newStr += str[i--];
-    }
-    return newStr;
-}
+//     while(i >= 0) {
+//         newStr += str[i--];
+//     }
+//     return newStr;
+// }
 
 function findFirstLeftCharIndex(doc, cursorIndex) {
     --cursorIndex;
@@ -2388,10 +2392,10 @@ function getKeywordList(editor, pos) {
                         kwList = ['create', 'read', 'update', 'delete'];
                         kwList = filterUsedKeywords(doc, kwList, currentRAR_Start, currentRAR_End, currentArr);
                         return editor.session.$mode.getCompletions(kwList, 'actions');
-                    case 'roles':
-                        kwList = ['admin', 'lecturer'];
-                        kwList = filterUsedKeywords(doc, kwList, currentRAR_Start, currentRAR_End, currentArr);
-                        return editor.session.$mode.getCompletions(kwList, 'roles');
+                    // case 'roles':
+                    //     kwList = ['admin', 'lecturer'];
+                    //     kwList = filterUsedKeywords(doc, kwList, currentRAR_Start, currentRAR_End, currentArr);
+                    //     return editor.session.$mode.getCompletions(kwList, 'roles');
                     default:
                         return null;
                 }

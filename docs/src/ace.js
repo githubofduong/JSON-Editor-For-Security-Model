@@ -21572,9 +21572,10 @@ ace.define("ace/data-model", [], function(require, exports, module) {
                     : processResponseText(false)
             }
         }
-
+        
         xhttp.open("PUT", "https://jsondm-editor.herokuapp.com/api/checkDM", true);
         xhttp.setRequestHeader("Content-Type", "application/json; charset=UTF-8");
+        xhttp.withCredentials = true;
         xhttp.send(tmp);
     }
 
