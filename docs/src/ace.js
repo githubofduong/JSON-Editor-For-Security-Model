@@ -21544,8 +21544,17 @@ ace.define("ace/data-model", [], function(require, exports, module) {
         }
         reader.onload = function(e) { // FileReader eventHandler()
             this.validateDataModelSemantic(reader.result, this.processResponseText);
+            /** local test **/
+            // try {
+            //     this.setDataModel(JSON.parse(reader.result));
+            //     // console.log(this.getDataModel());
+            //     this.sendDataModelToWorker();
+            // } catch (error) {
+            //     // console.log(error);
+            //     window.alert('ParsingError: Invalid JSON!');
+            // }
         }.bind(this);
-    }
+    }//.bind(this);
 
     this.processResponseText = function(response, text) {
         if (response) {
