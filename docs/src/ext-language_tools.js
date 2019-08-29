@@ -1912,19 +1912,33 @@ function getResources(className) {
         // array of objects containing values for 'resources'
         resources = [],
         // placeholders for accessing elements
-        tmpName, tmpAttr, attObj,
+        tmpName, tmpAttr, tmpClasses,
         // get array of data model
         dataModel = dataModelObj.getDataModel();
     /*******************  VARIABLES  *************************/
 
     // loop through data model
     for (el in dataModel) {
-        tmpName = dataModel[el].class;      // access property 'class'
-        tmpAttr = dataModel[el].attributes; // access property 'attributes'
-        // class name found and 'attributes' is an array with at least an element
-        if (tmpName == className && Array.isArray(tmpAttr) && tmpAttr.length) {
-            for (subEl in tmpAttr) {     // loop through array 'attributes'
-                resources.push(tmpAttr[subEl].name);
+        tmpClasses = dataModel[el].classes;
+        if (tmpClasses) {
+            switch(tmpClasses.indexOf(className)) {
+                case 0:
+                    resources.push(dataModel[el].ends[1]);
+                    break;
+                case 1:
+                    resources.push(dataModel[el].ends[0]);
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            tmpName = dataModel[el].class;      // access property 'class'
+            tmpAttr = dataModel[el].attributes; // access property 'attributes'
+            // class name found and 'attributes' is an array with at least an element
+            if (tmpName == className && Array.isArray(tmpAttr) && tmpAttr.length) {
+                for (subEl in tmpAttr) {     // loop through array 'attributes'
+                    resources.push(tmpAttr[subEl].name);
+                }
             }
         }
     }

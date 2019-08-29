@@ -1804,6 +1804,24 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
                 classNameList.push(tmp.class);
             }
         }
+
+        for (el in dataModel) {
+            tmp = dataModel[el];
+            if (tmp.hasOwnProperty('classes')) {
+                for (var subEl in classNameList) {
+                    switch(tmp.classes.indexOf(classNameList[subEl])) {
+                        case 0:
+                            classList[subEl].attributes.push({name: tmp.ends[1]});
+                            break;
+                        case 1:
+                            classList[subEl].attributes.push({name: tmp.ends[0]});
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            }
+        }
     }
 
     // search for a property which error belongs to
