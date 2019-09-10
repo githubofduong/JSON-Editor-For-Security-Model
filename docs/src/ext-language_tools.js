@@ -1,5 +1,5 @@
 ace.define("ace/snippets",["require","exports","module","ace/lib/oop","ace/lib/event_emitter","ace/lib/lang","ace/range","ace/anchor","ace/keyboard/hash_handler","ace/tokenizer","ace/lib/dom","ace/editor"], function(require, exports, module) {
-// "use strict";
+"use strict";
 var oop = require("./lib/oop");
 var EventEmitter = require("./lib/event_emitter").EventEmitter;
 var lang = require("./lib/lang");
@@ -907,7 +907,7 @@ var Editor = require("./editor").Editor;
 });
 
 ace.define("ace/autocomplete/popup",["require","exports","module","ace/virtual_renderer","ace/editor","ace/range","ace/lib/event","ace/lib/lang","ace/lib/dom"], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var Renderer = require("../virtual_renderer").VirtualRenderer;
 var Editor = require("../editor").Editor;
@@ -1248,7 +1248,7 @@ exports.$singleLineEditor = $singleLineEditor;
 });
 
 ace.define("ace/autocomplete/util",["require","exports","module"], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 exports.parForEach = function(array, fn, callback) {
     var completed = 0;
@@ -1334,7 +1334,7 @@ exports.getCompletionPrefix = function (editor) {
 });
 
 ace.define("ace/autocomplete",["require","exports","module","ace/keyboard/hash_handler","ace/autocomplete/popup","ace/autocomplete/util","ace/lib/event","ace/lib/lang","ace/lib/dom","ace/snippets"], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var HashHandler = require("./keyboard/hash_handler").HashHandler;
 var AcePopup = require("./autocomplete/popup").AcePopup;
@@ -1860,7 +1860,7 @@ exports.FilteredList = FilteredList;
 // });
 
 ace.define("ace/ext/language_tools",["require","exports","module","ace/snippets","ace/autocomplete","ace/config","ace/lib/lang","ace/autocomplete/util","ace/autocomplete/text_completer","ace/editor","ace/config", "ace/data-model"], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var snippetManager = require("../snippets").snippetManager;
 var Autocomplete = require("../autocomplete").Autocomplete;
@@ -1874,29 +1874,28 @@ var dataModelObj = new DataModel();
 function getClassNames() {
 
     /*******************  VARIABLES  *************************/
-    var classEl,   // class element: iterator of for loop
-                   // get JSON array of data model
-        dataModel = dataModelObj.getDataModel(),
-        className, // placeholder for accessing class name
-        classList = []; // list of class names
+    // var classEl,   // class element: iterator of for loop
+    //                // get JSON array of data model
+    //     dataModel = dataModelObj.getDataModel(),
+    //     className // placeholder for accessing class name
+    //      // list of class names
     /*******************  VARIABLES  *************************/        
 
-    // loop through each JSON object data model
-    for (classEl in dataModel) {
-        // access each object
-        className = dataModel[classEl].class;
-        // only get objects having 2 properties 'name' and 'attributes'
-        if (className && dataModel[classEl].attributes) {
-            classList.push(
-                {
-                    name: className,
-                    value: className,
-                    score: 0,
-                    meta: "className" // tag name for auto-completion
-                }
-            );
+    var dataModel = dataModelObj.getDataModel(),
+        clazz, attributes,
+        classList = [];
+
+    dataModel.forEach(function(currentObject) {
+        if (!Array.isArray(currentObject) && typeof currentObject === 'object') {
+            clazz = currentObject.class;
+            attributes = currentObject.attributes;
         }
-    }
+        if (clazz && typeof clazz === 'string' && clazz.trim() !== '' &&
+            attributes && Array.isArray(attributes) && attributes.length > 0) {
+                classList.push(clazz);
+            }
+    });
+    
     return classList;
 }
 
@@ -1913,99 +1912,40 @@ function getResources(className) {
         // array of objects containing values for 'resources'
         resources = [],
         // placeholders for accessing elements
-        tmpName, tmpAttr, attObj,
+        tmpName, tmpAttr, tmpClasses,
         // get array of data model
         dataModel = dataModelObj.getDataModel();
     /*******************  VARIABLES  *************************/
 
     // loop through data model
     for (el in dataModel) {
-        tmpName = dataModel[el].class;      // access property 'class'
-        tmpAttr = dataModel[el].attributes; // access property 'attributes'
-        // class name found and 'attributes' is an array with at least an element
-        if (tmpName == className && Array.isArray(tmpAttr) && tmpAttr.length) {
-            for (subEl in tmpAttr) {     // loop through array 'attributes'
-                resources.push(tmpAttr[subEl].name);
-                // attObj = tmpAttr[subEl]; // access object element of the array
-                // resources.push({
-                //     name: attObj.name,
-                //     value: attObj.name,
-                //     score: 0,
-                //     meta: "resources"
-                // });
+        tmpClasses = dataModel[el].classes;
+        if (tmpClasses) {
+            switch(tmpClasses.indexOf(className)) {
+                case 0:
+                    resources.push(dataModel[el].ends[1]);
+                    break;
+                case 1:
+                    resources.push(dataModel[el].ends[0]);
+                    break;
+                default:
+                    break;
+            }
+        } else {
+            tmpName = dataModel[el].class;      // access property 'class'
+            tmpAttr = dataModel[el].attributes; // access property 'attributes'
+            // class name found and 'attributes' is an array with at least an element
+            if (tmpName == className && Array.isArray(tmpAttr) && tmpAttr.length) {
+                for (subEl in tmpAttr) {     // loop through array 'attributes'
+                    resources.push(tmpAttr[subEl].name);
+                }
             }
         }
     }
     return resources;
 }
 
-// function to find the exact property or class name for auto-completion
-function findTermInRange(lowerBound, upperBound, terms, doc, cursorIndex) {
-    
-    /*******************  PARAMETERS  *************************
-     * lowerBound, upperBound: indices of the range to search
-     * terms: array of possible terms to filter
-     * doc: a string containing text input
-     *******************  PARAMETERS  ************************/
-
-    /*******************  VARIABLES  *************************/
-    var el,        // iterator of for loop
-        tmp_term,  // a placeholder for accessing each element
-        strStart = '"',
-        strEnd = '"\\s*:',
-        str,       // modify the search term (adding double quotes, regexp)
-        termIndex, // index of currently searching term
-        termName,  // name of closest searched term
-        oldIndex = 0, // to store the last valid index
-                   // range to search
-        range = doc.substring(lowerBound, upperBound),
-        patt;      // search pattern, RegExp()
-    /*******************  VARIABLES  *************************/ 
-
-    cursorIndex = cursorIndex || upperBound;
-    cursorIndex -= lowerBound;
-    upperBound -= lowerBound;
-    // classify array terms
-    if (typeof terms[0] == 'object') {
-        terms.forEach(function(currentEl, index, arr) {
-            arr[index] = currentEl.name;
-        });
-        strStart = '"class"\\s*:\\s*"';
-        strEnd = '"';
-    }
-    // loop through each element in array terms
-    for (el in terms) {
-        // access each element
-        tmp_term = terms[el];
-        // create a string to literal to pass to RegExp()
-        str = strStart + tmp_term + strEnd;
-        // create a search pattern
-        patt = new RegExp(str);
-        // find the term's index
-        termIndex = range.search(patt);
-// console.log('termIndex: '+termIndex);
-// console.log(tmp_term);
-// console.log(oldIndex);
-// console.log(cursorIndex)
-        // the higher the index, the closer the property to the cursor
-        if (oldIndex < termIndex && termIndex < cursorIndex) {
-            oldIndex = termIndex; // store the term's index
-            termName = tmp_term;  // store the term's name
-        }
-    }
-    
-    tmp_term = strStart +termName+ strEnd;
-    patt = new RegExp(tmp_term, 'gi');
-    if (range.match(patt).length > 1) {return '';}
-
-    str = range.substring(oldIndex, cursorIndex);
-    patt = new RegExp('"(.|\s)*"\s*:', 'gi');
-    if (str.match(patt).length > 1) {return '';}
-    
-    return termName;
-}
-
-function validateDoubleQuotes(cursorIndex, doc) {
+function scanSM(cursorIndex, doc) {
 
     /**************** PARAMETERS ********************
      * cursorIndex: index of the cursor in the string
@@ -2014,134 +1954,304 @@ function validateDoubleQuotes(cursorIndex, doc) {
 
     /**************** VARIABLES***********************/
     var // iterator of while loop
-        c = 0,
+        c = 0, i = 0,
         // length of document
         docLength = doc.length,
         // state to mark if iterator c is inside a pair of double quotes
         state = false,
         // identify which block level the cursor is inside
-        blockLevel = -1,
+        // currentBlockLevel,
         // indices of left curly braces for block level 0 and 1 respectively
-        left_0, left_1,
         // left and right characters which are not blank outside double quotes
-        leftChar, rightChar,
+        leftChar, rightChar, leftCharIndex,
         // to store last character and current character
         lastChar = '', currentChar,
         // to store index of the object the cursor is inside
         objIndex = -1;
+        // arrBegin, arrEnd;
     /**************** VARIABLES **********************/
 
-    // doc.search(/^\s*\[\s*\{[.\s]/)
-    if (doc.search(/(^\s*\[\s*\{)(?:(.|\s))*(\}\s*\]\s*$)/)) { return false; }
-    // console.log(doc.match(/(^\s*\[\s*\{)(?:(.|\s))*(\}\s*\]\s*$)/)[0]);
-    // determine blockLevel
-    while (c < cursorIndex) {
+
+    var arrCounter, blockCounter, // counter of [], {}
+        // iterator of main array []
+        mainArrStart, mainArrEnd,
+        // iterator of permission []
+        subArrStart, subArrEnd,
+        // iterator of resources, actions, roles []
+        resourcesActionsRolesArrStart, resourcesActionsRolesArrEnd,
+        // iterator of block of main array
+        outerBlockStart, outerBlockEnd,
+        // iterator of block of permission
+        innerBlockStart, innerBlockEnd,
+        
+        // trigger for permission, RAR
+        pivotSubArr = true, pivotRAR = true,
+        // trigger for blocks
+        pivotInnerBlock = true, pivotOuterBlock = true,
+
+        // capture level of block, array
+        currentBlock, currentArr,
+        // capture block of main array
+        currentOuterBlockStart, currentOuterBlockEnd,
+        // capture block of permission
+        currentInnerBlockStart, currentInnerBlockEnd,
+        // capture permission []
+        currentSubArrStart, currentSubArrEnd,
+        // capture resources, actions, roles []
+        currentRAR_Start, currentRAR_End;
+
+    mainArrStart = doc.match(/^\s*\[\s*\{\s*/g);
+    if (!mainArrStart) {return false}
+
+    mainArrStart = mainArrStart[0]; //console.log(mainArrStart);
+    c = mainArrStart.length;
+    outerBlockStart = mainArrStart.lastIndexOf('{');
+    mainArrStart = mainArrStart.indexOf('[');
+
+    arrCounter = 1;
+    blockCounter = 1;
+    while(c < docLength) { //console.log("'"+doc[c]+"'");
         currentChar = doc[c];
-        if (currentChar === '"' && lastChar !== '\\') {
-            state = !state;
-        } else if (currentChar === '{' && !state) {
-            if (blockLevel == -1) { left_0 = c; ++objIndex; }
-            else if (blockLevel == 0) { left_1 = c }
-            ++blockLevel;
-        } else if (currentChar === '}' && !state) {
-            --blockLevel;
+        switch(currentChar) {
+            case '"':
+                lastChar !== '\\' ? state = !state : {}
+                break;
+            case '[':
+                if (!state) {
+                    if (arrCounter === 1) {
+                        subArrStart = c;
+                    } else if (arrCounter === 2) {
+                        resourcesActionsRolesArrStart = c;
+                    } else if (arrCounter > 3) {
+                        return false;
+                    }
+                    ++arrCounter;
+                }
+                break;
+            case ']':
+                if (!state) {
+                    if (arrCounter === 2) {
+                        subArrEnd = c;
+                    } else if (arrCounter === 3) {
+                        resourcesActionsRolesArrEnd = c;
+                    } else if (arrCounter < 0) {
+                        return false;
+                    }
+                    --arrCounter;
+                }
+                break;
+            case '{':
+                if (!state) {
+                    ++blockCounter;
+                    if (blockCounter === 1) {
+                        outerBlockStart = c;
+                    } else if (blockCounter === 2) {
+                        innerBlockStart = c;
+                    } else {
+                        return false;
+                    }
+                }
+                break;
+            case '}':
+                if (!state) {
+                    if (blockCounter === 2) {
+                        innerBlockEnd = c;
+                    } else if (blockCounter === 1) {
+                        outerBlockEnd = c;
+                    } else {
+                        return false;
+                    }
+                    --blockCounter;
+                }
+                break;
+            default:
+                break;
         }
+
+        if (!arrCounter) {
+            mainArrEnd = c;
+            break;
+        }
+
+        if (c === cursorIndex) {
+            currentBlock = blockCounter;
+            currentOuterBlockStart = outerBlockStart;
+            if (blockCounter === 2) {
+                currentArr = arrCounter;
+                currentSubArrStart = subArrStart;
+                currentInnerBlockStart = innerBlockStart;
+                if (arrCounter === 3) {
+                    currentRAR_Start = resourcesActionsRolesArrStart;
+                } else {
+                    pivotRAR = false;
+                }
+            } else {
+                pivotSubArr = false;
+                pivotInnerBlock = false;
+                pivotRAR = false;
+            }
+        }
+
+        // object of main array {}
+        if (pivotOuterBlock && blockCounter === 0 && outerBlockEnd > cursorIndex) {
+            pivotOuterBlock = false;
+            currentOuterBlockEnd = outerBlockEnd;
+        }
+
+        // array of permission []
+        if (pivotSubArr && arrCounter === 1 && subArrEnd > cursorIndex) {
+            pivotSubArr = false;
+            currentSubArrEnd = subArrEnd;
+        }
+
+        // object of permission {}
+        if (pivotInnerBlock && blockCounter === 1 && innerBlockEnd > cursorIndex) {
+            pivotInnerBlock = false;
+            currentInnerBlockEnd = innerBlockEnd;
+        }
+
+        // array of resources, actions, roles []
+        if (pivotRAR && arrCounter === 2 && resourcesActionsRolesArrEnd > cursorIndex) {
+            pivotRAR = false;
+            currentRAR_End = resourcesActionsRolesArrEnd;
+        }
+
         lastChar = currentChar;
         ++c;
     }
 
-    if (blockLevel > -1) {
-        var rightCurlyBrace = blockLevel;
-        // in the end, rightCurlyBrace reflects if curly braces are synchronous
-        while (rightCurlyBrace !== -1 && c < docLength) {
-            currentChar = doc[c];
-            if (currentChar === '"' && lastChar !== '\\') {
-                state = !state;
-            } else if (currentChar === '{' && !state) {
-                ++rightCurlyBrace;
-            } else if (currentChar === '}' && !state) {
-                --rightCurlyBrace;
+    if (doc[c] !== ']' || arrCounter || blockCounter) {return false}
+    // cursor must be inside the main array
+    if (cursorIndex <= mainArrStart || mainArrEnd <= cursorIndex) {return false}
+
+    if (currentBlock === 1 && currentOuterBlockStart < cursorIndex && cursorIndex < currentOuterBlockEnd) {
+        leftCharIndex = findLeftIndex(doc, cursorIndex);
+        leftChar = doc[leftCharIndex];
+        rightChar = findRightIndex(doc, cursorIndex);
+
+        if (leftChar === ':') {
+            var range = stringReverse(doc.substring(currentOuterBlockStart, leftCharIndex)),
+                // "class"\s*: ->
+                term  = new RegExp('\\s*"' +stringReverse('class')+ '"');
+
+            if (range.search(term)) {return false}
+
+            if (doc.substring(currentOuterBlockStart, currentOuterBlockEnd).match(/"class"\s*:/g) > 1) {
+                return false;
             }
-            lastChar = currentChar;
-            ++c;
+            
         }
-        if (rightCurlyBrace === -1) {
-            leftChar = findLeftChar(cursorIndex, doc);
-            rightChar = findRightChar(cursorIndex, doc);
+
+        return {
+            blockLevel: currentBlock,
+            leftChar: leftChar,
+            rightChar: rightChar,
+            outerBlockStart: currentOuterBlockStart,
+            outerBlockEnd: currentOuterBlockEnd
+        }
+    } else if (currentBlock === 2) {
+        if (currentSubArrStart < currentInnerBlockStart && currentInnerBlockEnd < currentSubArrEnd) {
+            var range = stringReverse(doc.substring(currentOuterBlockStart, currentSubArrStart)),
+                // "permission"\s*:\s*[ -> [\s*:\s*" reverseString() "
+                term  = new RegExp('\\s*:\\s*"' +stringReverse('permission')+ '"');
+
+            if (range.search(term)) {return false}
+            
+            if (doc.substring(currentOuterBlockStart, currentOuterBlockEnd).match(/"permission"\s*:/g).length > 1) {
+                return false;
+            }
+
+            if (currentArr === 3) {
+                if (currentRAR_Start <= currentInnerBlockStart || currentInnerBlockEnd <= currentRAR_End) {
+                    return false;
+                }
+
+                var i = false, el, termArr = ['resources', 'actions', 'roles'];
+                range = stringReverse(doc.substring(currentInnerBlockStart, currentRAR_Start));
+
+                for (el in termArr) {
+                    term = new RegExp('\\s*:\\s*"' +stringReverse(termArr[el])+ '"');
+
+                    if (range.search(term)) {continue}
+
+                    term = new RegExp('"' +termArr[el]+ '"\\s*:', 'g');
+                    if (doc.substring(currentInnerBlockStart, currentRAR_Start).match(term).length > 1) {
+                        return false;
+                    }
+                    i = true;
+                    term = termArr[el];
+
+                    break;
+                }
+       
+                if (!i) {return false;}
+            }
+
+            leftCharIndex = findLeftIndex(doc, cursorIndex);
+            leftChar = doc[leftCharIndex];
+            rightChar = findRightIndex(doc, cursorIndex);
+
             return {
-                c: c,
-                blockLevel: blockLevel,
+                blockLevel: currentBlock,
                 leftChar: leftChar,
                 rightChar: rightChar,
-                left_0: left_0,
-                left_1: left_1,
-                objIndex: objIndex
+                outerBlockStart: currentOuterBlockStart,
+                outerBlockEnd: currentOuterBlockEnd,
+                term: term,
+                currentArr: currentArr,
+                currentSubArrStart: currentSubArrStart,
+                currentSubArrEnd: currentSubArrEnd,
+                currentInnerBlockStart: currentInnerBlockStart,
+                currentInnerBlockEnd: currentInnerBlockEnd,
+                currentRAR_Start: currentRAR_Start,
+                currentRAR_End: currentRAR_End
             }
         }
     }
     return false;
 }
 
-function findLeftChar(leftUpper, doc) {
-    var leftChar,
-        leftLine = doc.slice(0, leftUpper);
-    do { // find index of left double quote
-        leftUpper = leftLine.lastIndexOf('"', leftUpper-1);
-    } while (leftUpper > 0 && leftLine[leftUpper-1] === '\\');
+function stringReverse(string) {
+    return string.split("").reverse().join("");
+};
 
-    //leftUpper stores the index of left double quote
-    while (--leftUpper > 0 && /\s/.test(leftLine[leftUpper]));
-    leftChar = leftLine[leftUpper];
+function findLeftIndex(doc, cursorIndex) {
+    --cursorIndex;
+    do {
+        cursorIndex = doc.lastIndexOf('"', cursorIndex) - 1;
+    } while (doc[cursorIndex] === '\\')
 
-    return leftChar;
+    return doc.substring(0, cursorIndex+1).search(/\s*$/)-1;
 }
 
-function findRightChar(rightLower, doc) {
-    var rightChar,
-        docLength = doc.length;
-    do { // find index of right double quote
-        rightLower = doc.indexOf('"', rightLower);
-    } while (rightLower < docLength && doc[rightLower-1] === '\\');
+function findRightIndex(doc, cursorIndex) {
+    do {
+        cursorIndex = doc.indexOf('"', cursorIndex);
+    } while(doc[cursorIndex-1] === '\\')
 
-    //rightLower stores the index of right double quote
-    while (++rightLower < docLength && /\s/.test(doc[rightLower]));
-    rightChar = doc[rightLower];
-
-    return rightChar;
+    return doc[doc.substring(cursorIndex+1).search(/[^\s]/)+cursorIndex+1];
 }
 
-function filterClassNames(classList, doc) {
-    var el,
-        patt,
-        index,
-        str = '"class"\\s*:\\s*"';
-
-    for (el in classList) {
-        patt = new RegExp(str +classList[el].name+ '"');
-        index = doc.search(patt);
-        if (index !== -1) {
-            classList.splice(el, el+1);
-        }
-    }
-    return classList;
-}
-
-// function filterPropertiesOuter(propertyList, doc, lower, upper) {
+// function filterClassNames(classList, doc) {
 //     var el,
-//         str = (!lower || !upper) ? doc : doc.slice(lower, upper),
-//         patt;
+//         patt,
+//         index,
+//         str = '"class"\\s*:\\s*"',
+//         arr = [];
 
-//     for (el in propertyList) {
-//         patt = new RegExp('"' +propertyList[el]+ '"\\s*:');
-//         if (str.search(patt) !== -1) {
-//             propertyList.splice(el, el+1);
+//     for (el in classList) {
+//         patt = new RegExp(str +classList[el].name+ '"');
+//         index = doc.search(patt);
+//         if (index === -1) {
+//             arr.push(classList[el]);
 //         }
 //     }
-//     return propertyList;
+
+//     return arr;
 // }
 
-function filterProperties(propertyList, doc, lower, upper) {
-    var str = (!lower || !upper) ? doc : doc.slice(lower, upper),
+function filterProperties(doc, propertyList, lower, upper) {
+    var str = doc.slice(lower, upper),
         i = 0,
         patt,
         tmp,
@@ -2182,17 +2292,43 @@ function filterProperties(propertyList, doc, lower, upper) {
     return propertyList;
 }
 
-function filterArrValues(property, values, doc, lower, upper) {
-    var str = doc.slice(lower, upper),
-        patt = new RegExp('"' +property+ '"\\s*:\\s*\\[.*\\]'),
-        res = str.match(patt)[0],
-        str = res.match(/\[.*\]/)[0],
-        arr = [];
-
-    values.filter(function(currentValue) {
-        str.indexOf(currentValue) === -1 ? arr.push(currentValue) : {};
+function filterUsedKeywords(doc, kwList, lower, upper, arrLevel) {
+    var range = doc.substring(lower+1, upper),
+        list = [],
+        str,
+        strStart = '"',
+        strEnd = arrLevel === 3 ? '"' : '"\\s*:';
+        
+    kwList.forEach(function(currentTerm) {
+        str = strStart + currentTerm + strEnd;
+        
+        range.search(str) === -1 ? list.push(currentTerm) : {}
     });
-    return arr;
+
+    return list;
+}
+
+function findClassName(classList, doc, lower1, upper1, lower2, upper2) {
+    var range1 = doc.substring(lower1+1, upper1),
+        range2 = doc.substring(lower2+1, upper2),
+        range = range1 + range2,
+        patt = /"class"\s*:\s*"(?:.*)[^\\]"/g,
+        tmpIndex,
+        res;
+
+    res = range.match(patt);
+    if (res) {
+        var el, str;
+        for (el in res) {
+            str = res[el];
+            tmpIndex = str.indexOf('"', str.indexOf(':'))+1;
+            str = str.substring(tmpIndex, str.length-1);
+            if (classList.indexOf(str) !== -1) {
+                return str;
+            }
+        }
+    }
+    return null;
 }
 
 function getKeywordList(editor, pos) {
@@ -2202,10 +2338,9 @@ function getKeywordList(editor, pos) {
         // get text document as a string
         doc = editor.getValue(),
         // fetch necessary info
-        validatedResult = validateDoubleQuotes(cursorIndex, doc);
+        validatedResult = scanSM(cursorIndex, doc);
 
     if (validatedResult) {
-
         var // array to return list of keywords
             kwList,
             // class name of the object the cursor is inside
@@ -2218,113 +2353,56 @@ function getKeywordList(editor, pos) {
             propertyList_1 = ['resources', 'actions', 'roles'],
             propertyList_2 = ['default', 'auth'],
             // alias for validatedResult
-            res = validatedResult
+            res = validatedResult,
             // getting properties
-            c = res.c,
-            blockLevel = res.blockLevel;
+            blockLevel = res.blockLevel,
             leftChar = res.leftChar,
             rightChar = res.rightChar,
-            left_0 = res.left_0,
-            left_1 = res.left_1,
-            objIndex = res.objIndex;
+            outerBlockStart = res.outerBlockStart,
+            outerBlockEnd = res.outerBlockEnd;
 
-        function validateClass() { //console.log("validateClass()");
-            // var patt = new RegExp(/(?:"permission"\s*:\s*\[(.|\s)*\}\s*\])/);
-            var range = doc.substring(left_0, c),
-                tmpCursor = cursorIndex - left_0,
-                // lower = 0, upper = c - left_0,
-                classIndex = range.lastIndexOf('"class"', tmpCursor);
-// console.log(classIndex);
-            if (classIndex === -1) {return false;}
-            var str = range.substring(classIndex, tmpCursor),
-                tmp = str.search(/^"class"\s*:\s*"$/gi);
-// console.log(str);
-            if (tmp) {return false;}
-            
-            var patt = new RegExp(/"permission"\s*:\s*\[(.|\s)*\}\s*\]/gi),
-                pArr = range.match(patt);
-            // console.log(pArr[0]);
-            // console.log(pArr[1]);
-            // console.log(pArr.length);
-            // console.log(pArr);
-            if (pArr && pArr.length > 1) {return false;}
-            // console.log("passed");
-            // 0 perm: count "class" in range
-            
-            if (!pArr) {
-                str = range;
-            } else {
-                var pIndex = range.search(patt),
-                    len = range.match(patt)[0].length;
-                str = range.substring(0, pIndex) + range.substring(pIndex+len);
+        if (blockLevel === 1) {
+            if (leftChar === ':') {
+                return editor.session.$mode.getCompletions(classList, 'class');
+            } else if ((leftChar === '{' || leftChar === ',')  && (rightChar === ',' || rightChar === '}' || rightChar === ':')) {
+                kwList = ['class', 'permission'];
+                kwList = filterUsedKeywords(doc, kwList, outerBlockStart, outerBlockEnd);
+                return editor.session.$mode.getCompletions(kwList);
             }
-            // 1 perm: count "class" from left_0 to perm and perm to c
-            //   class > 1 return false
-            var len = str.match(/"class"\s*:/).length;
-            if (len === 1) {return true;}
-            
-            return false;
-        }
-        // double quotes on the right side
-        // findTermInRange(left_0, c, ['class', 'permission'], doc, cursorIndex) === 'class' &&
-        if (leftChar === ':' &&  !blockLevel) {
-            if (validateClass()) {
-                return filterClassNames(classList, doc);
-            }
-            return null;
-        } else {
+        } else if (blockLevel === 2) {
+            var term = res.term,
+                currentArr = res.currentArr,
+                currentSubArrStart = res.currentSubArrStart,
+                currentSubArrEnd = res.currentSubArrEnd,
+                currentInnerBlockStart = res.currentInnerBlockStart,
+                currentInnerBlockEnd = res.currentInnerBlockEnd,
+                currentRAR_Start = res.currentRAR_Start,
+                currentRAR_End = res.currentRAR_End;
 
-            // values for 'resources', 'actions', 'roles'
-            if ((leftChar === '[' || leftChar === ',') && (rightChar === ']' || rightChar === ',')) {
-
-                // search for the corresponding property keyword
-                propertyName = findTermInRange(left_1, c, propertyList_1, doc, cursorIndex);
+            if (currentArr === 2 && leftChar !== ':') {
+                kwList = ['resources', 'actions', 'default', 'roles', 'auth'];
+                kwList = filterProperties(doc, kwList, currentInnerBlockStart, currentInnerBlockEnd);
+                return editor.session.$mode.getCompletions(kwList);
+            } else if (currentArr === 3) {
                 
-                switch (propertyName) {
+                switch(term) {
                     case 'resources':
-                        className = findTermInRange(left_0, c, classList, doc);
-                        console.log(className);
+                        // className = findTermInRange(outerBlockStart, outerBlockEnd, classList, doc);
+                        className = findClassName(classList, doc, outerBlockStart, currentSubArrStart, currentSubArrEnd, outerBlockEnd);
                         kwList = getResources(className);
-                        kwList = filterArrValues('resources', kwList, doc, left_1, c);
+                        kwList = filterUsedKeywords(doc, kwList, currentRAR_Start, currentRAR_End, currentArr);
                         return editor.session.$mode.getCompletions(kwList, 'resources');
                     case 'actions':
                         kwList = ['create', 'read', 'update', 'delete'];
-                        kwList = filterArrValues('actions', kwList, doc, left_1, c);
+                        kwList = filterUsedKeywords(doc, kwList, currentRAR_Start, currentRAR_End, currentArr);
                         return editor.session.$mode.getCompletions(kwList, 'actions');
-                    case 'roles':
-                        kwList = ['admin', 'lecturer'];
-                        kwList = filterArrValues('roles', kwList, doc, left_1, c);
-                        return editor.session.$mode.getCompletions(kwList, 'roles');
+                    // case 'roles':
+                    //     kwList = ['admin', 'lecturer'];
+                    //     kwList = filterUsedKeywords(doc, kwList, currentRAR_Start, currentRAR_End, currentArr);
+                    //     return editor.session.$mode.getCompletions(kwList, 'roles');
                     default:
                         return null;
                 }
-            // values for 'default', 'auth'
-            } else if (leftChar === ':' && blockLevel === 1) {
-                return null;
-                // search for the corresponding property keyword
-                // propertyName = findTermInRange(left_1, cursorIndex, propertyList_2, doc);
-
-                // switch(propertyName) {
-                    // case 'default':
-                        // return null;
-                        // kwList = ['self = caller'];
-                        // return editor.session.$mode.getCompletions(kwList, 'default');
-                    // case 'auth':
-                        // return null;
-                        // kwList = ['true', 'self.oclAsType(Student).courses->exists(c|c.lectures->includes(caller.oclAsType(Lecturer)))'];
-                        // return editor.session.$mode.getCompletions(kwList, 'auth');
-                    // default:
-                        // return null;
-                // }
-            } else { // for keywords of properties
-                if (blockLevel === 0) { // 'class', 'permission'
-                    kwList = ['class', 'permission'];
-                    kwList = filterProperties(kwList, doc, left_0, c);
-                } else if (blockLevel === 1) { // 'resources', 'actions', 'default' or 'roles', 'auth'
-                    kwList = ['resources', 'actions', 'default', 'roles', 'auth'];
-                    kwList = filterProperties(kwList, doc, left_1, c);
-                }
-                return kwList ? editor.session.$mode.getCompletions(kwList) : [];
             }
         }
     }
