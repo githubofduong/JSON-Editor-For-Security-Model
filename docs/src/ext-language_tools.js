@@ -1,5 +1,5 @@
 ace.define("ace/snippets",["require","exports","module","ace/lib/oop","ace/lib/event_emitter","ace/lib/lang","ace/range","ace/anchor","ace/keyboard/hash_handler","ace/tokenizer","ace/lib/dom","ace/editor"], function(require, exports, module) {
-// "use strict";
+"use strict";
 var oop = require("./lib/oop");
 var EventEmitter = require("./lib/event_emitter").EventEmitter;
 var lang = require("./lib/lang");
@@ -907,7 +907,7 @@ var Editor = require("./editor").Editor;
 });
 
 ace.define("ace/autocomplete/popup",["require","exports","module","ace/virtual_renderer","ace/editor","ace/range","ace/lib/event","ace/lib/lang","ace/lib/dom"], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var Renderer = require("../virtual_renderer").VirtualRenderer;
 var Editor = require("../editor").Editor;
@@ -1248,7 +1248,7 @@ exports.$singleLineEditor = $singleLineEditor;
 });
 
 ace.define("ace/autocomplete/util",["require","exports","module"], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 exports.parForEach = function(array, fn, callback) {
     var completed = 0;
@@ -1334,7 +1334,7 @@ exports.getCompletionPrefix = function (editor) {
 });
 
 ace.define("ace/autocomplete",["require","exports","module","ace/keyboard/hash_handler","ace/autocomplete/popup","ace/autocomplete/util","ace/lib/event","ace/lib/lang","ace/lib/dom","ace/snippets"], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var HashHandler = require("./keyboard/hash_handler").HashHandler;
 var AcePopup = require("./autocomplete/popup").AcePopup;
@@ -1860,7 +1860,7 @@ exports.FilteredList = FilteredList;
 // });
 
 ace.define("ace/ext/language_tools",["require","exports","module","ace/snippets","ace/autocomplete","ace/config","ace/lib/lang","ace/autocomplete/util","ace/autocomplete/text_completer","ace/editor","ace/config", "ace/data-model"], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var snippetManager = require("../snippets").snippetManager;
 var Autocomplete = require("../autocomplete").Autocomplete;
@@ -1878,7 +1878,7 @@ function getClassNames() {
     //                // get JSON array of data model
     //     dataModel = dataModelObj.getDataModel(),
     //     className // placeholder for accessing class name
-    //     ; // list of class names
+    //      // list of class names
     /*******************  VARIABLES  *************************/        
 
     var dataModel = dataModelObj.getDataModel(),
@@ -1945,7 +1945,7 @@ function getResources(className) {
     return resources;
 }
 
-function validateDoubleQuotes(cursorIndex, doc) {
+function scanSM(cursorIndex, doc) {
 
     /**************** PARAMETERS ********************
      * cursorIndex: index of the cursor in the string
@@ -2125,9 +2125,9 @@ function validateDoubleQuotes(cursorIndex, doc) {
     if (cursorIndex <= mainArrStart || mainArrEnd <= cursorIndex) {return false}
 
     if (currentBlock === 1 && currentOuterBlockStart < cursorIndex && cursorIndex < currentOuterBlockEnd) {
-        leftCharIndex = findFirstLeftCharIndex(doc, cursorIndex);
+        leftCharIndex = findLeftIndex(doc, cursorIndex);
         leftChar = doc[leftCharIndex];
-        rightChar = findFirstRightChar(doc, cursorIndex);
+        rightChar = findRightIndex(doc, cursorIndex);
 
         if (leftChar === ':') {
             var range = stringReverse(doc.substring(currentOuterBlockStart, leftCharIndex)),
@@ -2187,9 +2187,9 @@ function validateDoubleQuotes(cursorIndex, doc) {
                 if (!i) {return false;}
             }
 
-            leftCharIndex = findFirstLeftCharIndex(doc, cursorIndex);
+            leftCharIndex = findLeftIndex(doc, cursorIndex);
             leftChar = doc[leftCharIndex];
-            rightChar = findFirstRightChar(doc, cursorIndex);
+            rightChar = findRightIndex(doc, cursorIndex);
 
             return {
                 blockLevel: currentBlock,
@@ -2215,17 +2215,7 @@ function stringReverse(string) {
     return string.split("").reverse().join("");
 };
 
-// function reverseString(str) {
-//     var i = str.length-1,
-//         newStr = '';
-    
-//     while(i >= 0) {
-//         newStr += str[i--];
-//     }
-//     return newStr;
-// }
-
-function findFirstLeftCharIndex(doc, cursorIndex) {
+function findLeftIndex(doc, cursorIndex) {
     --cursorIndex;
     do {
         cursorIndex = doc.lastIndexOf('"', cursorIndex) - 1;
@@ -2234,7 +2224,7 @@ function findFirstLeftCharIndex(doc, cursorIndex) {
     return doc.substring(0, cursorIndex+1).search(/\s*$/)-1;
 }
 
-function findFirstRightChar(doc, cursorIndex) {
+function findRightIndex(doc, cursorIndex) {
     do {
         cursorIndex = doc.indexOf('"', cursorIndex);
     } while(doc[cursorIndex-1] === '\\')
@@ -2348,7 +2338,7 @@ function getKeywordList(editor, pos) {
         // get text document as a string
         doc = editor.getValue(),
         // fetch necessary info
-        validatedResult = validateDoubleQuotes(cursorIndex, doc);
+        validatedResult = scanSM(cursorIndex, doc);
 
     if (validatedResult) {
         var // array to return list of keywords

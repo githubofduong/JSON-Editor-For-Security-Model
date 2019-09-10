@@ -1,5 +1,3 @@
-// "no use strict";
-// console.log("worker-json.js");//worker-json.js was loaded in $createWorkerFromOldConfig (ace.js) <= createWorker (mode-json.js)
 !(function(window) {
 if (typeof window.window != "undefined" && window.document)
     return;
@@ -229,7 +227,7 @@ function receiveDataModel(dataModel) {
     console.log(dataModel);
 }
 ace.define("ace/lib/oop",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 exports.inherits = function(ctor, superCtor) {
     ctor.super_ = superCtor;
@@ -257,7 +255,7 @@ exports.implement = function(proto, mixin) {
 });
 
 ace.define("ace/range",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 var comparePoints = function(p1, p2) {
     return p1.row - p2.row || p1.column - p2.column;
 };
@@ -496,10 +494,9 @@ exports.Range = Range;
 });
 
 ace.define("ace/apply_delta",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 function throwDeltaError(delta, errorText){
-    // console.log("Invalid Delta:", delta);
     throw "Invalid Delta: " + errorText;
 }
 
@@ -527,7 +524,7 @@ function validateDelta(docLines, delta) {
         throwDeltaError(delta, "delta.range must match delta lines");
 }
 
-exports.applyDelta = function(docLines, delta, doNotValidate) {//console.log("applyDelta apply_delta");
+exports.applyDelta = function(docLines, delta, doNotValidate) {
     
     var row = delta.start.row;
     var startColumn = delta.start.column;
@@ -561,7 +558,7 @@ exports.applyDelta = function(docLines, delta, doNotValidate) {//console.log("ap
 });
 
 ace.define("ace/lib/event_emitter",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var EventEmitter = {};
 var stopPropagation = function() { this.propagationStopped = true; };
@@ -691,7 +688,7 @@ exports.EventEmitter = EventEmitter;
 });
 
 ace.define("ace/anchor",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var oop = require("./lib/oop");
 var EventEmitter = require("./lib/event_emitter").EventEmitter;
@@ -816,7 +813,7 @@ var Anchor = exports.Anchor = function(doc, row, column) {
 });
 
 ace.define("ace/document",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var oop = require("./lib/oop");
 var applyDelta = require("./apply_delta").applyDelta;
@@ -1109,7 +1106,7 @@ var Document = function(textOrLines) {
         if (isInsert && delta.lines.length > 20000) {
             this.$splitAndapplyLargeDelta(delta, 20000);
         }
-        else {//console.log("applyDelta document")
+        else {
             applyDelta(this.$lines, delta, doNotValidate);
             this._signal("change", delta);
         }
@@ -1171,7 +1168,7 @@ exports.Document = Document;
 });
 
 ace.define("ace/lib/lang",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 exports.last = function(a) {
     return a[a.length - 1];
@@ -1359,7 +1356,7 @@ exports.delayedCall = function(fcn, defaultTimeout) {
 });
 
 ace.define("ace/worker/mirror",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var Range = require("../range").Range;
 var Document = require("../document").Document;
@@ -1373,8 +1370,8 @@ var Mirror = exports.Mirror = function(sender) {
     var deferredUpdate = this.deferredUpdate = lang.delayedCall(this.onUpdate.bind(this));
     
     var _self = this;
-    //e: [{start}, [inserted text]]
-    sender.on("change", function(e) {//console.log("sender on change:"); console.log(e);
+
+    sender.on("change", function(e) {
         var data = e.data;
         if (data[0].start) {
             doc.applyDeltas(data);
@@ -1388,7 +1385,7 @@ var Mirror = exports.Mirror = function(sender) {
                 doc.applyDelta(d, true);
             }
         }
-        if (_self.$timeout) { //console.log("_self.$timeout");
+        if (_self.$timeout) {
             return deferredUpdate.schedule(_self.$timeout);
         }
         _self.onUpdate();
@@ -1424,7 +1421,7 @@ var Mirror = exports.Mirror = function(sender) {
 });
 
 ace.define("ace/mode/json/json_parse",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
     var at,     // The index of the current character
         ch,     // The current character
@@ -1649,10 +1646,8 @@ ace.define("ace/mode/json/json_parse",[], function(require, exports, module) {
     };
 
     return function (source, reviver) {
-        // console.log("source:\n" +source);
-        // console.log("reviver:\n" +reviver);
         var result;
-        // text was declared
+
         text = source;
         at = 0;
         ch = ' ';
@@ -1690,7 +1685,7 @@ ace.define("ace/mode/json/json_parse",[], function(require, exports, module) {
     };
 });
 
-ace.define("ace/mode/validator/schema", [], function(require, exports, module){
+ace.define("ace/mode/schema_validator", [], function(require, exports, module){
 "use strict";
     var at = 0,// index of left curly brace of first block
         p_at = 0,// index of left square bracket of array "permission"
@@ -1741,7 +1736,6 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
             searchProperty(at, 'class');
         }
 
-        // if (!classNameList.length) { return; }
         for (var name in classNameList) {
             if (classNameList[name] == className) {
                 setAttributesList(className);
@@ -2124,7 +2118,7 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
     // };
     // validate_semantic = require("./validator/semantic");
     
-    return function(doc, dataModel) {
+    exports.validateSchema = function (doc, dataModel) {
         
         var arrEl,// iterator
             // conver text input to json
@@ -2184,15 +2178,13 @@ ace.define("ace/mode/validator/schema", [], function(require, exports, module){
 });
 
 ace.define("ace/mode/json_worker",[], function(require, exports, module) {
-// "use strict";
+"use strict";
 
 var oop = require("../lib/oop");
 var Mirror = require("../worker/mirror").Mirror;
 var parse = require("./json/json_parse");
-var validate_schema = require("./validator/schema");
+var validateSchema = require("./schema_validator").validateSchema;
 var JsonWorker = exports.JsonWorker = function(sender) {
-// console.log(arguments.callee.caller.toString());
-
     Mirror.call(this, sender);
     this.setTimeout(200);
 };
@@ -2223,7 +2215,7 @@ oop.inherits(JsonWorker, Mirror);
         try {
             if (value) {
                 parse(value);
-                validate_schema(value, dataModel);
+                validateSchema(value, dataModel);
             }
         } catch (e) {
             var pos = this.doc.indexToPosition(e.at-1);
