@@ -13572,7 +13572,6 @@ Editor.$uid = 0;
                 var range = ranges[i];
                 if (!range.isEmpty())
                     session.remove(range);
-                // console.log("ace/editor last for loop");
                 session.insert(range.start, lines[i]);
             }
         }
@@ -19246,7 +19245,7 @@ function createWorker(workerUrl) {
     if (typeof Worker == "undefined")//web worker not supported
         return { postMessage: function() {}, terminate: function() {} };
     //web worker is supported in this firefox browser
-    if (config.get("loadWorkerFromBlob")) { //console.log("f");
+    if (config.get("loadWorkerFromBlob")) {
         var blob = $workerBlob(workerUrl);
         var URL = window.URL || window.webkitURL;
         var blobURL = URL.createObjectURL(blob);
@@ -21509,14 +21508,14 @@ ace.define("ace/data-model", [], function(require, exports, module) {
             window.alert(reader.error);
         }
         reader.onload = function(e) { // FileReader eventHandler()
-            this.validateDataModelSemantic(reader.result, this.processResponseText);
+            // this.validateDataModelSemantic(reader.result, this.processResponseText);
             /** local test **/
-            // try {
-            //     this.setDataModel(JSON.parse(reader.result));
-            //     this.sendDataModelToWorker();
-            // } catch (error) {
-            //     window.alert('ParsingError: Invalid JSON!');
-            // }
+            try {
+                this.setDataModel(JSON.parse(reader.result));
+                this.sendDataModelToWorker();
+            } catch (error) {
+                window.alert('ParsingError: Invalid JSON!');
+            }
         }.bind(this);
     }.bind(this);
 

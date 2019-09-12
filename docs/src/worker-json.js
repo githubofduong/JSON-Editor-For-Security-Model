@@ -223,9 +223,7 @@ window.onmessage = function(e) {
     }    
 };
 })(this);
-function receiveDataModel(dataModel) {
-    console.log(dataModel);
-}
+
 ace.define("ace/lib/oop",[], function(require, exports, module) {
 "use strict";
 
@@ -1805,10 +1803,10 @@ ace.define("ace/mode/schema_validator", [], function(require, exports, module){
                 for (var subEl in classNameList) {
                     switch(tmp.classes.indexOf(classNameList[subEl])) {
                         case 0:
-                            classList[subEl].attributes.push({name: tmp.ends[1]});
+                            classList[subEl].attributes.push({name: tmp.ends[0]});
                             break;
                         case 1:
-                            classList[subEl].attributes.push({name: tmp.ends[0]});
+                            classList[subEl].attributes.push({name: tmp.ends[1]});
                             break;
                         default:
                             break;

@@ -1923,10 +1923,10 @@ function getResources(className) {
         if (tmpClasses) {
             switch(tmpClasses.indexOf(className)) {
                 case 0:
-                    resources.push(dataModel[el].ends[1]);
+                    resources.push(dataModel[el].ends[0]);
                     break;
                 case 1:
-                    resources.push(dataModel[el].ends[0]);
+                    resources.push(dataModel[el].ends[1]);
                     break;
                 default:
                     break;
@@ -2003,14 +2003,14 @@ function scanSM(cursorIndex, doc) {
     mainArrStart = doc.match(/^\s*\[\s*\{\s*/g);
     if (!mainArrStart) {return false}
 
-    mainArrStart = mainArrStart[0]; //console.log(mainArrStart);
+    mainArrStart = mainArrStart[0];
     c = mainArrStart.length;
     outerBlockStart = mainArrStart.lastIndexOf('{');
     mainArrStart = mainArrStart.indexOf('[');
 
     arrCounter = 1;
     blockCounter = 1;
-    while(c < docLength) { //console.log("'"+doc[c]+"'");
+    while(c < docLength) {
         currentChar = doc[c];
         switch(currentChar) {
             case '"':
@@ -2255,7 +2255,9 @@ function filterProperties(doc, propertyList, lower, upper) {
         i = 0,
         patt,
         tmp,
-        hasDefault = hasRoles = hasAuth = false;
+        hasDefault = false,
+        hasRoles = false,
+        hasAuth = false;
 
     while (i < propertyList.length) {
         tmp = propertyList[i];
